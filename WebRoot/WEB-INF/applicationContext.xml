@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+	<!-- JMX configuration of XML -->
+
+	<!-- 1.Define your own bean -->
+	<bean id="beanMonitor" class="com.demo.spring.entity.BeanMonitor" />
+	<!-- 2.Define mbeanServer -->
+	<bean id="mbeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean" >
+		<property name="defaultDomain" value="test"></property>
+	</bean>
+	<!-- 3.define assembler -->
+	<bean id="assembler"
+		class="org.springframework.jmx.export.assembler.MetadataMBeanInfoAssembler">
+		<property name="attributeSource" ref="jmxAttributeSource" />
+	</bean>
+	<!-- 4.define attribute -->
+	<bean id="jmxAttributeSource"
+		class="org.springframework.jmx.export.annotation.AnnotationJmxAttributeSource" />
+	<!-- 5.define adaptor -->
+	<bean id="httpJDMKAdaptor" class="com.sun.jdmk.comm.HtmlAdaptorServer">
+		<property name="port">
+			<value>8098</value>
+		</property>
+	</bean>
+	<!-- 6.define exporter -->
+	<bean id="mbeanExporter" class="org.springframework.jmx.export.MBeanExporter"
+		lazy-init="false">
+		<property name="assembler" ref="assembler"></property>
+		<property name="server" ref="mbeanServer"></property>
+		<property name="beans">
+			<map>
+				<entry key="test:name=beanMonitor" value-ref="beanMonitor" />
+				<entry key="test:name=jdmkAdaptor,port=8098" value-ref="httpJDMKAdaptor" />
+			</map>
+		</property>
+	</bean>
+
+	<!-- normal POJO -->
+	<bean id="daoImpl" class="com.demo.spring.test.DaoImpl"></bean>
+	<bean id="serviceImpl" class="com.demo.spring.test.ServiceImpl">
+		<property name="dao" ref="daoImpl"></property>
+	</bean>
+
+
+</beans>
